@@ -19,13 +19,23 @@ async fn main() {
     if &args.action_type == "start" {
         match connect_async(Url::parse("ws://127.0.0.1:8000/ws").unwrap()).await {
             Ok((ws_stream, _)) => {
-                log::info!("Connected successfully with server!");
+                //log::info!("Connected successfully with server!");
 
-                let (_, mut read) = ws_stream.split();
+                let (mut write, mut read) = ws_stream.split();
 
-                if let Some(Ok(Message::Text(text))) = read.next().await {
-                    log::info!("Received a message from server: {}", text);
-                    println!("Received a message from server: {}", text);
+                while let Some(msg) = read.next().await {
+                    let start_message = Message::Text(args.action_type.clone());
+                    match msg {
+                        Ok(Message::Text(text)) => {
+                            println!("Received from server: {}", text);
+                            write.send(start_message).await.expect("Failed to send message");
+                        }
+                        Ok(_) => {}
+                        Err(e) => {
+                            println!("Error receiving message form server: {:?}", e);
+                            break;
+                        }
+                    }
                 }
             },
             Err(e) => {
@@ -34,7 +44,11 @@ async fn main() {
         }
     } else {
         error!("Argument invalid");
+
+
     }
+
+
 }
 
 
