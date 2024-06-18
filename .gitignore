@@ -1,1 +1,5 @@
+# Rust folders
 target
+
+# Python folders
+__pycache__
