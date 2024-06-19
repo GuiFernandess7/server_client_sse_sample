@@ -1,21 +1,18 @@
-# main.py
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-import asyncio
+from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
 
 app = FastAPI()
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    await websocket.send_text("Connected successfully")
+async def event_generator():
+    for i in range(101):
+        yield f"data: Porcentagem do processo: {i}%\n\n".encode()
+        #await asyncio.sleep(1)
 
-    try:
-        while True:
-            data = await websocket.receive_text()
-            if data == "start":
-                await websocket.send_text("Initializing...")
-                await asyncio.sleep(5)
+@app.get("/stream/main")
+async def stream():
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
-    finally:
-        await websocket.close()
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
