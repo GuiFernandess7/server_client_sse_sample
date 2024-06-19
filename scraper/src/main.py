@@ -1,18 +1,31 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
+import json, uvicorn
+from asyncio import sleep
 
 app = FastAPI()
 
-async def event_generator():
-    for i in range(101):
-        yield f"data: Porcentagem do processo: {i}%\n\n".encode()
-        #await asyncio.sleep(1)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.get("/stream/main")
-async def stream():
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
+async def waypoints_generator():
+    waypoints = open('./waypoints.json')
+    waypoints = json.load(waypoints)
+    for waypoint in waypoints[0: 10]:
+        data = json.dumps(waypoint)
+        yield f"event: locationUpdate\ndata: {data}\n\n"
+        await sleep(1)
+
+@app.get("/get-waypoints")
+async def root():
+    return StreamingResponse(waypoints_generator(), media_type="text/event-stream")
+
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
+    uvicorn.run(app, host="127.0.0.1", port=8000)
