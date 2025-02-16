@@ -15,7 +15,7 @@ app.add_middleware(
 )
 
 async def waypoints_generator():
-    waypoints = open('./waypoints.json')
+    waypoints = open('src/waypoints.json')
     waypoints = json.load(waypoints)
     for waypoint in waypoints[0: 10]:
         data = json.dumps(waypoint)

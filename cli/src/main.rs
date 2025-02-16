@@ -17,7 +17,7 @@ async fn main() -> Result<(), es::Error>{
     let auth_header = "";
 
     if &args.action_type == "start" {
-        let client = es::ClientBuilder::for_url("http://localhost:8000/get-waypoints")?
+        let client = es::ClientBuilder::for_url("http://localhost:8000/events")?
                                         .header("Authorization", auth_header)?
                                         .reconnect(
                                             es::ReconnectOptions::reconnect(true)
@@ -34,7 +34,8 @@ async fn main() -> Result<(), es::Error>{
 
         ()
     }
-    Err(es::Error::StreamClosed)
+    Ok(())
+    //Err(es::Error::StreamClosed)
 }
 
 fn tail_events(client: impl es::Client) -> impl Stream<Item = Result<(), ()>> {
@@ -50,15 +51,3 @@ fn tail_events(client: impl es::Client) -> impl Stream<Item = Result<(), ()>> {
         })
         .map_err(|err| eprintln!("error streaming events: {:?}", err))
 }
-
-
-/* let http_client = Client::new();
-        let results = http_client.get("http://localhost:8000/get-waypoin").send();
-        if results.is_ok() {
-            match results {
-                Ok(response) => println!("{:#?}", response.text()),
-                Err(e) => println!("Error getting http response: {:?}", e),
-            }
-        } else {
-            println!("Not connected: Server not found");
-        } */

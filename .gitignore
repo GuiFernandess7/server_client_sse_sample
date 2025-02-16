@@ -3,3 +3,5 @@ target
 
 # Python folders
 __pycache__
+
+venv
